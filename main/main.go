@@ -6,15 +6,15 @@ import (
 	"urlshort"
 )
 
-const PORT  = ":8082"
+const PORT = ":8082"
 
 func main() {
 	mux := defaultMux()
 
 	// Build the MapHandler using the mux as the fallback
-	pathToUrls := map[string]string {
+	pathToUrls := map[string]string{
 		"/urlshort-godoc": "https://godoc.org/github.com/gophercises/urlshort",
-		"/yaml-godoc": "https://godoc.org/gopkg.in/yaml.v2",
+		"/yaml-godoc":     "https://godoc.org/gopkg.in/yaml.v2",
 	}
 
 	mapHandler := urlshort.MapHandler(pathToUrls, mux)
@@ -39,7 +39,10 @@ func main() {
 	}
 
 	fmt.Printf("Server listening on port %s", PORT)
-	http.ListenAndServe(PORT, jsonHandler)
+	err = http.ListenAndServe(PORT, jsonHandler)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func defaultMux() *http.ServeMux {
@@ -49,5 +52,13 @@ func defaultMux() *http.ServeMux {
 }
 
 func hello(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "Hello, World!")
+	_, err := fmt.Fprintf(w, "Address: %s\n", r.RemoteAddr)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = fmt.Fprintln(w, "Hello, World!")
+	if err != nil {
+		panic(err)
+	}
 }
