@@ -10,6 +10,7 @@ const PORT = ":8082"
 
 func main() {
 	mux := defaultMux()
+	mux.HandleFunc("/new", urlshort.NewHandler)
 
 	// Build the MapHandler using the mux as the fallback
 	pathToUrls := map[string]string{
@@ -19,30 +20,37 @@ func main() {
 
 	mapHandler := urlshort.MapHandler(pathToUrls, mux)
 
-	yaml := `
-- path: /urlshort
-  url: https://github.com/gophercises/urlshort
-- path: /urlshort-final
-  url: https://github.com/gophercises/urlshort/tree/solution
-`
+	/*
+		jsonString := "[{\"path\": \"/tame\", \"url\": \"https://institutotame.com\"}]"
 
-	jsonString := "[{\"path\": \"/tame\", \"url\": \"https://institutotame.com\"}]"
-
-	_, err := urlshort.YAMLHandler([]byte(yaml), mapHandler)
-	if err != nil {
-		panic(err)
-	}
-
-	jsonHandler, err := urlshort.JsonHandler(jsonString, mapHandler)
+		jsonHandler, err := urlshort.JsonHandler(jsonString, mapHandler)
+		if err != nil {
+			panic(err)
+		}
+	*/
+	sqlHandler, err := urlshort.SqlHandler(mapHandler)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Printf("Server listening on port %s", PORT)
-	err = http.ListenAndServe(PORT, jsonHandler)
+
+	err = http.ListenAndServe(PORT, sqlHandler)
 	if err != nil {
 		panic(err)
 	}
+
+	/*
+		certmagic.Agreed = true
+		certmagic.Email = "ignacio@institutotame.com"
+		certmagic.CA = certmagic.LetsEncryptStagingCA
+
+		err = certmagic.HTTPS([]string{"example.com"}, jsonHandler)
+		if err != nil {
+			panic(err)
+		}
+
+	*/
 }
 
 func defaultMux() *http.ServeMux {
